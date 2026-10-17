@@ -48,15 +48,20 @@ type OpenRouterConfig struct {
 	// azure/eu. An empty value keeps the normal eligible-provider routing.
 	Provider   string
 	RequireZDR bool
+	// SchemaInPrompt repeats the response schema in the system prompt for
+	// OpenAI-compatible endpoints (such as Ollama Cloud) that ignore
+	// response_format.
+	SchemaInPrompt bool
 
 	MaxRetries       int
 	RetryMaxInterval time.Duration
 }
 
 type OpenRouter struct {
-	client     openai.Client
-	provider   string
-	requireZDR bool
+	client         openai.Client
+	provider       string
+	requireZDR     bool
+	schemaInPrompt bool
 }
 
 // OpenRouter may return assistant content as either a string or an array of
@@ -127,13 +132,20 @@ func NewOpenRouter(config OpenRouterConfig) (*OpenRouter, error) {
 	}
 
 	return &OpenRouter{
-		client:     openai.NewClient(options...),
-		provider:   strings.TrimSpace(config.Provider),
-		requireZDR: config.RequireZDR,
+		client:         openai.NewClient(options...),
+		provider:       strings.TrimSpace(config.Provider),
+		requireZDR:     config.RequireZDR,
+		schemaInPrompt: config.SchemaInPrompt,
 	}, nil
 }
 
 func (o *OpenRouter) Generate(ctx context.Context, request GenerateRequest) (GenerateResult, error) {
+	if o.schemaInPrompt {
+		var err error
+		if request, err = withSchemaInstruction(request); err != nil {
+			return GenerateResult{}, err
+		}
+	}
 	chatRequest, requestOptions, err := buildOpenRouterRequest(request, o.provider, o.requireZDR)
 	if err != nil {
 		return GenerateResult{}, err
@@ -167,6 +179,23 @@ func (o *OpenRouter) Generate(ctx context.Context, request GenerateRequest) (Gen
 		RequestID: response.ID,
 		Usage:     openRouterUsage(response.Usage),
 	}, nil
+}
+
+func withSchemaInstruction(request GenerateRequest) (GenerateRequest, error) {
+	if request.ResponseSchema == nil {
+		return request, nil
+	}
+	schema, err := json.Marshal(request.ResponseSchema.Schema)
+	if err != nil {
+		return request, fmt.Errorf("AI response schema: %w", err)
+	}
+	instruction := "Respond with a single JSON object only, without prose or code fences, " +
+		"that validates against this JSON Schema:\n" + string(schema)
+	if prompt := strings.TrimSpace(request.SystemPrompt); prompt != "" {
+		instruction = prompt + "\n\n" + instruction
+	}
+	request.SystemPrompt = instruction
+	return request, nil
 }
 
 //nolint:gocyclo // Provider-neutral generation options intentionally converge at this SDK request boundary.

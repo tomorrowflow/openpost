@@ -242,3 +242,47 @@ func TestOpenRouterGenerateValidatesImageBeforeRequest(t *testing.T) {
 	var providerError *ProviderError
 	require.False(t, errors.As(err, &providerError))
 }
+
+func TestOpenRouterGenerateRepeatsSchemaInPromptForCompatibleEndpoints(t *testing.T) {
+	var received map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&received))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"id":"gen-compatible",
+			"object":"chat.completion",
+			"created":1730000000,
+			"model":"gpt-oss:120b",
+			"choices":[{
+				"index":0,
+				"message":{"role":"assistant","content":"{\"text\":\"hi\"}"},
+				"finish_reason":"stop"
+			}]
+		}`))
+	}))
+	t.Cleanup(server.Close)
+	generator, err := NewOpenRouter(OpenRouterConfig{
+		APIKey:         "test-api-key",
+		BaseURL:        server.URL,
+		SchemaInPrompt: true,
+	})
+	require.NoError(t, err)
+
+	result, err := generator.Generate(context.Background(), GenerateRequest{
+		Model:        "gpt-oss:120b",
+		SystemPrompt: "Write a post.",
+		UserPrompt:   "About change.",
+		ResponseSchema: &JSONSchema{Name: "post", Schema: map[string]any{
+			"type":       "object",
+			"properties": map[string]any{"text": map[string]any{"type": "string"}},
+		}},
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, `{"text":"hi"}`, result.Text)
+	messages := received["messages"].([]any)
+	system := messages[0].(map[string]any)["content"].(string)
+	require.True(t, strings.HasPrefix(system, "Write a post.\n\nRespond with a single JSON object only"))
+	require.Contains(t, system, `{"properties":{"text":{"type":"string"}},"type":"object"}`)
+	require.NotNil(t, received["response_format"])
+}
