@@ -260,6 +260,8 @@ Example:
 
 If `redirect_uri` is omitted, OpenPost derives `https://your-domain.com/api/v1/accounts/instagram/callback` from `OPENPOST_APP_URL`. Instagram media publishing requires `OPENPOST_MEDIA_URL` or `OPENPOST_S3_PUBLIC_BASE_URL` to point at public HTTPS media URLs.
 
+To connect an Instagram professional account without a Facebook Page, add `"connection_mode": "instagram_login"` and use the Instagram App ID and secret from the Meta product **Instagram API with Instagram login**. One Instagram mode applies per instance, and switching modes requires reconnecting accounts. See [Instagram](../providers/instagram.md).
+
 ## TikTok
 
 TikTok is configured through the provider app registry instead of legacy provider-specific env vars. Use `OPENPOST_PROVIDER_APPS` for bootstrap/self-hosting or the instance-admin provider app API for hosted/operator-managed credentials.
@@ -304,7 +306,7 @@ If `redirect_uri` is omitted, OpenPost derives `https://your-domain.com/api/v1/a
 ## Notes
 
 - The preferred names above are what new deployments should use.
-- `OPENPOST_PROVIDER_APPS` accepts provider metadata plus instance-owned secrets. OAuth apps use `client_id`, `client_secret`, and `redirect_uri`; Telegram uses `bot_token`, `bot_username`, and `webhook_secret`; Discord bot apps use `connection_mode: "bot"`, `client_id` (the application ID), `client_secret`, `bot_token`, and `redirect_uri`. Database-backed secrets are encrypted. Supported configured identities include `x`, `mastodon`, `linkedin`, `threads`, `facebook`, `instagram`, `tiktok`, `youtube`, `pinterest`, `telegram`, `googlebusiness`, and Discord bot mode. Bluesky credentials and Discord incoming webhooks remain user-owned connection modes.
+- `OPENPOST_PROVIDER_APPS` accepts provider metadata plus instance-owned secrets. OAuth apps use `client_id`, `client_secret`, and `redirect_uri`; Telegram uses `bot_token`, `bot_username`, and `webhook_secret`; Discord bot apps use `connection_mode: "bot"`, `client_id` (the application ID), `client_secret`, `bot_token`, and `redirect_uri`. Instagram without a Facebook Page uses `connection_mode: "instagram_login"` with the Instagram App ID as `client_id`, `client_secret`, and `redirect_uri`. Database-backed secrets are encrypted. Supported configured identities include `x`, `mastodon`, `linkedin`, `threads`, `facebook`, `instagram`, `tiktok`, `youtube`, `pinterest`, `telegram`, `googlebusiness`, and Discord bot mode. Bluesky credentials and Discord incoming webhooks remain user-owned connection modes.
 - Backward-compatible aliases still work for existing installs: `DATABASE_URL`, `OPENPOST_DB_PATH`, `OPENPOST_FRONTEND_URL`, `OPENPOST_CORS_EXTRA_ORIGINS`, `JWT_SECRET`, `ENCRYPTION_KEY`, `TWITTER_CLIENT_ID`, `TWITTER_CLIENT_SECRET`, `TWITTER_REDIRECT_URI`, and `LINKEDIN_DISABLE_THREAD_REPLIES`.
 - File-backed aliases also work for existing installs, such as `DATABASE_URL_FILE`, `JWT_SECRET_FILE`, and `ENCRYPTION_KEY_FILE`.
 - The root `.env.example` is the best copy-paste starting point.

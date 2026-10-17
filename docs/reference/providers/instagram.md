@@ -6,7 +6,7 @@ description: Configure Meta OAuth and publish images, carousels, Stories, and Re
 
 This page is for operators configuring Instagram and users connecting a professional account.
 
-Instagram professional publishing uses Meta OAuth, asks the user to choose a Business or Creator account connected to a Facebook Page, and stores the selected Page access token.
+By default, Instagram professional publishing uses Meta OAuth, asks the user to choose a Business or Creator account connected to a Facebook Page, and stores the selected Page access token.
 
 ## Requirements
 
@@ -30,6 +30,40 @@ https://your-domain.com/api/v1/accounts/instagram/callback
   - `pages_read_user_content`
   - `pages_manage_metadata`
 - Public `OPENPOST_MEDIA_URL` or S3/R2 public media URL for image and Reel video posts
+
+## Instagram Login (no Facebook Page)
+
+OpenPost can instead connect an Instagram professional account with Business Login for Instagram. This variant needs no Facebook Page and no Facebook Login.
+
+- The Instagram account must be a Business or Creator account. Personal accounts cannot connect.
+- In the Meta developer app, add the product **Instagram API with Instagram login**. Use the **Instagram App ID** and **Instagram App Secret** shown on that product's page, not the Facebook app ID and secret.
+- Add the OpenPost callback URL as an OAuth redirect URI on that product:
+
+```text
+https://your-domain.com/api/v1/accounts/instagram/callback
+```
+
+- OpenPost requests these permissions: `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_comments`, and `instagram_business_manage_insights`.
+
+Select this variant with `connection_mode`:
+
+```json
+[
+  {
+    "provider": "instagram",
+    "connection_mode": "instagram_login",
+    "client_id": "your-instagram-app-id",
+    "client_secret": "your-instagram-app-secret"
+  }
+]
+```
+
+Behavior in this variant:
+
+- An instance runs one Instagram mode at a time. Switching between the default Facebook Page mode and `instagram_login` requires reconnecting every Instagram account.
+- Publishing, Stories, Reels, carousels, comments, and analytics work as in the default mode.
+- Direct messages and location tags are unavailable.
+- Instagram issues 60-day tokens. OpenPost refreshes them automatically about 10 days before they expire.
 
 ## Configuration
 

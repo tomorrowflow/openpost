@@ -4,7 +4,7 @@ description: Connect a Page-linked Instagram professional account through Meta O
 icon: instagram
 ---
 
-OpenPost uses the Instagram API with Facebook Login. It connects an Instagram Business or Creator account linked to a Facebook Page. It does not connect a personal Instagram account through Instagram-only login.
+By default, OpenPost uses the Instagram API with Facebook Login. It connects an Instagram Business or Creator account linked to a Facebook Page. If you have no Facebook Page, use [Instagram Login](#instagram-login-without-a-facebook-page) instead. Neither mode connects a personal Instagram account.
 
 ## What you need
 
@@ -56,6 +56,36 @@ Meta's [Instagram API documentation](https://developers.facebook.com/docs/instag
   }
 ]
 ```
+
+## Instagram Login without a Facebook Page
+
+Business Login for Instagram connects a Business or Creator account directly, with no Facebook Page.
+
+1. In the Meta developer app, add the product **Instagram API with Instagram login**.
+2. On that product's page, add this **OAuth redirect URI**:
+
+   ```text
+   https://post.example.com/api/v1/accounts/instagram/callback
+   ```
+
+3. Copy the **Instagram App ID** and **Instagram App Secret** from the same page. These differ from the Facebook app ID and secret.
+4. Save the app with `connection_mode` set to `instagram_login`:
+
+   ```json
+   [
+     {
+       "provider": "instagram",
+       "connection_mode": "instagram_login",
+       "client_id": "your-instagram-app-id",
+       "client_secret": "your-instagram-app-secret",
+       "redirect_uri": "https://post.example.com/api/v1/accounts/instagram/callback"
+     }
+   ]
+   ```
+
+OpenPost requests `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_comments`, and `instagram_business_manage_insights`. Meta's [Instagram API with Instagram Login documentation](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/) covers app review.
+
+An instance runs one Instagram mode at a time. Switching modes requires reconnecting every Instagram account. In this mode, Direct messages and location tags are unavailable. Tokens last 60 days and OpenPost refreshes them automatically.
 
 ## Connect and test
 
