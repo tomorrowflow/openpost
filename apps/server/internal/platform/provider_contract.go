@@ -6,11 +6,12 @@ import (
 )
 
 const (
-	ConnectionModeAppPassword = "app_password"
-	ConnectionModeBot         = "bot"
-	ConnectionModeOAuth       = "oauth"
-	ConnectionModeOAuthOOB    = "oauth_oob"
-	ConnectionModeWebhook     = "webhook"
+	ConnectionModeAppPassword    = "app_password"
+	ConnectionModeBot            = "bot"
+	ConnectionModeInstagramLogin = "instagram_login"
+	ConnectionModeOAuth          = "oauth"
+	ConnectionModeOAuthOOB       = "oauth_oob"
+	ConnectionModeWebhook        = "webhook"
 )
 
 // ProviderAppContract defines the instance-owned application fields required
