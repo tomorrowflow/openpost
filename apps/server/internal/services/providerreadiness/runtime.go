@@ -416,6 +416,9 @@ func RequiredScopesForSubject(subject Subject) []string {
 	case capabilities.ProviderPinterest:
 		return []string{"boards:read", "boards:write", "pins:read", "pins:write", "user_accounts:read"}
 	case capabilities.ProviderInstagram:
+		if subject.AccountKind == platform.ConnectionModeInstagramLogin {
+			return []string{"instagram_business_basic", "instagram_business_content_publish"}
+		}
 		return []string{"instagram_basic", "instagram_content_publish"}
 	case capabilities.ProviderYouTube:
 		return []string{"https://www.googleapis.com/auth/youtube", "https://www.googleapis.com/auth/youtube.upload"}
