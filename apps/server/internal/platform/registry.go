@@ -103,6 +103,9 @@ var appBuilders = map[string]appBuilder{
 		if strings.TrimSpace(app.ClientID) == "" {
 			return nil, fmt.Errorf("instagram provider app requires client_id")
 		}
+		if app.ConnectionMode == ConnectionModeInstagramLogin {
+			return NewInstagramLoginAdapter(app.ClientID, app.ClientSecret, app.RedirectURI), nil
+		}
 		return NewInstagramAdapter(app.ClientID, app.ClientSecret, app.RedirectURI), nil
 	},
 	providerLinkedIn: func(app AppConfig, opts RegistryOptions) (Adapter, error) {

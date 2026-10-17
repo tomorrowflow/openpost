@@ -171,3 +171,43 @@ func TestNewInstanceAdapterCoversCredentialProviders(t *testing.T) {
 		t.Fatal("empty instance URL must not produce an adapter")
 	}
 }
+
+func TestBuildAdapterRegistryBuildsInstagramLoginBehindTheInstagramKey(t *testing.T) {
+	t.Parallel()
+
+	app := AppConfig{
+		Provider: "instagram", ConnectionMode: ConnectionModeInstagramLogin,
+		ClientID: "ig-app-id", ClientSecret: "ig-secret", RedirectURI: "https://app.test/api/v1/accounts/instagram/callback",
+	}
+	adapters, entries, err := BuildAdapterRegistry([]AppConfig{app}, RegistryOptions{})
+
+	require.NoError(t, err)
+	require.IsType(t, &InstagramLoginAdapter{}, adapters["instagram"])
+	require.Len(t, adapters, 1)
+	require.Len(t, entries, 1)
+	require.Equal(t, "instagram", entries[0].Key)
+	require.Equal(t, ConnectionModeInstagramLogin, entries[0].ConnectionMode)
+	require.Equal(t, "instagram", AppConfigMergeKey(app))
+	require.Equal(t, "instagram", AccountProviderKey("instagram", "", `{"connection_type":"instagram_login"}`))
+
+	adapters, _, err = BuildAdapterRegistry([]AppConfig{{Provider: "instagram", ClientID: "fb-app-id"}}, RegistryOptions{})
+	require.NoError(t, err)
+	require.IsType(t, &InstagramAdapter{}, adapters["instagram"])
+}
+
+func TestValidateAppConfigRequiresInstagramLoginCredentials(t *testing.T) {
+	t.Parallel()
+
+	complete := AppConfig{Provider: "instagram", ConnectionMode: "instagram_login", ClientID: "id", ClientSecret: "secret", RedirectURI: "https://app.test/cb"}
+	require.NoError(t, ValidateAppConfig(complete))
+
+	for field, mutate := range map[string]func(*AppConfig){
+		"client_id":     func(app *AppConfig) { app.ClientID = "" },
+		"client_secret": func(app *AppConfig) { app.ClientSecret = "" },
+		"redirect_uri":  func(app *AppConfig) { app.RedirectURI = "" },
+	} {
+		incomplete := complete
+		mutate(&incomplete)
+		require.ErrorContains(t, ValidateAppConfig(incomplete), field)
+	}
+}
