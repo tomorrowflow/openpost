@@ -679,7 +679,7 @@ func main() {
 		if err != nil {
 			fatalfWithDiagnostics(diagnosticsReporter, "failed to initialize public source loader: %v", err)
 		}
-		publicationBuilderService, err = publicationbuilder.New(contentGenerator, publicationbuilder.Config{Model: cfg.TextGenerationModel, Timeout: 180 * time.Second, Decider: decisionGenerator, DecisionModel: cfg.WorkflowDecisionModel})
+		publicationBuilderService, err = publicationbuilder.New(contentGenerator, publicationbuilder.Config{Model: cfg.TextGenerationModel, Timeout: 300 * time.Second, Decider: decisionGenerator, DecisionModel: cfg.WorkflowDecisionModel})
 		if err != nil {
 			fatalfWithDiagnostics(diagnosticsReporter, "failed to initialize publication builder: %v", err)
 		}
