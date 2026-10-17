@@ -487,3 +487,11 @@ func TestInstagramReadinessRejectionResumesSameContainer(t *testing.T) {
 		t.Fatalf("resuming confirmed readiness rejection: result=%+v err=%v", result, err)
 	}
 }
+
+func TestInstagramGraphURLDefaultsToFacebookGraphHost(t *testing.T) {
+	t.Setenv("META_GRAPH_API_VERSION", "v25.0")
+	got := NewInstagramAdapter("", "", "").graphURL("/ig-1/media")
+	if got != "https://graph.facebook.com/v25.0/ig-1/media" {
+		t.Fatalf("unexpected graph URL %q", got)
+	}
+}

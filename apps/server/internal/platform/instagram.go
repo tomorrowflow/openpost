@@ -49,6 +49,7 @@ type InstagramAdapter struct {
 	clientSecret string
 	redirectURI  string
 	graphVersion string
+	graphBaseURL string
 }
 
 func NewInstagramAdapter(clientID, clientSecret, redirectURI string) *InstagramAdapter {
@@ -57,6 +58,7 @@ func NewInstagramAdapter(clientID, clientSecret, redirectURI string) *InstagramA
 		clientSecret: clientSecret,
 		redirectURI:  redirectURI,
 		graphVersion: metaGraphAPIVersion(),
+		graphBaseURL: facebookGraphBaseURL,
 	}
 }
 
@@ -69,7 +71,7 @@ func (i *InstagramAdapter) AuthorizationGrantDescriptor() AuthorizationGrantDesc
 }
 
 func (i *InstagramAdapter) graphURL(path string) string {
-	return facebookGraphBaseURL + "/" + i.graphVersion + "/" + strings.TrimPrefix(path, "/")
+	return i.graphBaseURL + "/" + i.graphVersion + "/" + strings.TrimPrefix(path, "/")
 }
 
 func (i *InstagramAdapter) SearchPublishingOptions(ctx context.Context, accessToken string, input PublishingOptionsInput) (PublishingOptionsPage, error) {
