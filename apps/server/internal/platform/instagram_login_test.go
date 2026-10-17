@@ -241,6 +241,19 @@ func TestInstagramLoginGetProfile(t *testing.T) {
 	}
 }
 
+func TestInstagramLoginGetProfileAcceptsDataWrappedResponse(t *testing.T) {
+	adapter, _ := newInstagramLoginTestAdapter(t, map[string]string{
+		"/v25.0/me": `{"data":[{"user_id":"` + instagramLoginTestProfessionalID + `","username":"openpost"}]}`,
+	})
+	profile, err := adapter.GetProfile(context.Background(), "long")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if profile.ID != instagramLoginTestProfessionalID || profile.Username != "openpost" {
+		t.Fatalf("unexpected profile %#v", profile)
+	}
+}
+
 func TestInstagramLoginAccountSelectionKeepsTheTokenUnchanged(t *testing.T) {
 	adapter, _ := newInstagramLoginTestAdapter(t, nil)
 	token := &TokenResult{AccessToken: "long", ExpiresIn: 4320000, TokenType: "Bearer", Extra: map[string]string{"user_id": instagramLoginTestProfessionalID, "scope": "instagram_business_basic"}}

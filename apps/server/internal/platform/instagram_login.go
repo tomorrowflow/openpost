@@ -247,8 +247,17 @@ func (i *InstagramLoginAdapter) fetchMe(ctx context.Context, accessToken string)
 	if err != nil {
 		return nil, fmt.Errorf("instagram profile: %w", err)
 	}
+	// Meta documents /me both flat and wrapped in {"data":[...]}.
+	var response struct {
+		Data []instagramLoginMe `json:"data"`
+	}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("decoding instagram profile: %w", err)
+	}
 	var me instagramLoginMe
-	if err := json.Unmarshal(body, &me); err != nil {
+	if len(response.Data) > 0 {
+		me = response.Data[0]
+	} else if err := json.Unmarshal(body, &me); err != nil {
 		return nil, fmt.Errorf("decoding instagram profile: %w", err)
 	}
 	if strings.TrimSpace(me.UserID) == "" {
