@@ -15,10 +15,11 @@ const (
 func openRouterConfigs(cfg *config.Config) (ai.OpenRouterConfig, ai.OpenRouterConfig) {
 	// An empty BaseURL keeps OpenRouter; any OpenAI-compatible endpoint (e.g. Ollama) works.
 	base := ai.OpenRouterConfig{
-		APIKey:      cfg.OpenRouterAPIKey,
-		BaseURL:     cfg.OpenRouterBaseURL,
-		HTTPReferer: cfg.PublicURL,
-		XTitle:      "OpenPost",
+		APIKey:         cfg.OpenRouterAPIKey,
+		BaseURL:        cfg.OpenRouterBaseURL,
+		HTTPReferer:    cfg.PublicURL,
+		XTitle:         "OpenPost",
+		SchemaInPrompt: cfg.OpenRouterBaseURL != "",
 	}
 	imageConfig := base
 	imageConfig.Provider = cfg.ImageCaptionProvider
